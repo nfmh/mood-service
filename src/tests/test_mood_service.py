@@ -29,20 +29,13 @@ def client():
     with app.app_context():
         db.drop_all()
 
-def register_user(client):
-    """ Helper function to register a user in the user_service. """
-    return client.post('/register', json={'username': 'john', 'password': os.getenv('TEST_USER_PASSWORD', 'test123')})
-
-def login_user(client):
-    """ Helper function to login and return the JWT cookie. """
-    register_user(client)  # Ensure the user is registered
-    response = client.post('/login', json={'username': 'john', 'password': os.getenv('TEST_USER_PASSWORD', 'test123')})
-    return response.headers.get('Set-Cookie')  # Extract JWT from Set-Cookie header
-
+def mock_jwt_token():
+    """ Helper function to mock a JWT token. """
+    return os.getenv('MOCK_JWT_TOKEN')
 
 # Test adding a new song
 def test_add_song(client):
-    jwt_cookie = login_user(client)
+    jwt_cookie = f'access_token_cookie={mock_jwt_token()}'
 
     # Add a new song with mood 'happy'
     data = {
@@ -56,7 +49,7 @@ def test_add_song(client):
 
 # Test retrieving mood info
 def test_get_mood_info(client):
-    jwt_cookie = login_user(client)
+    jwt_cookie = f'access_token_cookie={mock_jwt_token()}'
 
     # Test retrieving mood info for 'happy'
     data = {'mood': 'happy'}
@@ -68,7 +61,7 @@ def test_get_mood_info(client):
 
 # Test adding song with missing data
 def test_add_song_missing_data(client):
-    jwt_cookie = login_user(client)
+    jwt_cookie = f'access_token_cookie={mock_jwt_token()}'
 
     data = {
         'mood': 'happy',
@@ -81,7 +74,7 @@ def test_add_song_missing_data(client):
 
 # Test retrieving mood info for non-existent mood
 def test_get_invalid_mood_info(client):
-    jwt_cookie = login_user(client)
+    jwt_cookie = f'access_token_cookie={mock_jwt_token()}'
 
     data = {'mood': 'non_existent_mood'}
     response = client.post('/mood', json=data, headers={'Cookie': jwt_cookie})
@@ -90,7 +83,7 @@ def test_get_invalid_mood_info(client):
 
 # Test adding a song for a non-existent mood
 def test_add_song_invalid_mood(client):
-    jwt_cookie = login_user(client)
+    jwt_cookie = f'access_token_cookie={mock_jwt_token()}'
 
     data = {
         'mood': 'non_existent_mood',
