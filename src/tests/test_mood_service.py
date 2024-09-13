@@ -7,28 +7,31 @@ from dotenv import load_dotenv
 
 
 @pytest.fixture
-def client():
+def app():
+    """Create and configure a new app instance for each test."""
     # Load environment variables from .env file
     load_dotenv(".env")
     
     # Create the Flask app
     app = create_app()
 
-    # Enable testing mode and explicitly disable CSRF protection for the test cases
+    # Enable testing mode
     app.config['TESTING'] = True
     app.config['WTF_CSRF_ENABLED'] = False 
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///:memory:')  # In-memory DB for testing
     
-    # Create the tables in the test database
     with app.app_context():
         db.create_all()  # Create the database tables
-    
-    with app.test_client() as client:
-        yield client
-    
-    # Drop the tables after the tests
+
+    yield app
+
     with app.app_context():
         db.drop_all()
+
+@pytest.fixture
+def client(app):
+    """A test client for the app."""
+    return app.test_client()
 
 def mock_jwt_token(app):
     """ Helper function to generate a mock JWT token. """
