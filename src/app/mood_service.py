@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify, make_response
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, set_access_cookies, unset_jwt_cookies
 from services.service import get_quotes, get_songs, get_movement, add_song
+import random
 
 mood_service_blueprint = Blueprint('mood_service', __name__)
 
