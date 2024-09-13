@@ -1,7 +1,14 @@
 from app import db
 
-# Define a constant
 MOODS_ID = "moods.id"
+
+class Mood(db.Model):
+    __tablename__ = 'moods'
+    id = db.Column(db.Integer, primary_key=True)
+    mood_name = db.Column(db.String(50), nullable=False, unique=True)
+    quotes = db.relationship('Quote', backref='mood', lazy=True)
+    songs = db.relationship('Song', backref='mood', lazy=True)
+    movements = db.relationship('Movement', backref='mood', lazy=True)
 
 class Quote(db.Model):
     __tablename__ = 'quotes'
