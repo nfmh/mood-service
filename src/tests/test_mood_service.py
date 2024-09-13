@@ -1,8 +1,9 @@
 import pytest
 import os
 from app import create_app, db
-from app.models import Quote, Song, Movement
+from app.models import Quote, Song, Movement, Mood
 from dotenv import load_dotenv
+
 
 @pytest.fixture
 def client():
@@ -28,23 +29,38 @@ def client():
     with app.app_context():
         db.drop_all()
 
+def register_user(client):
+    """ Helper function to register a user in the user_service. """
+    return client.post('/register', json={'username': 'john', 'password': os.getenv('TEST_USER_PASSWORD', 'test123')})
+
+def login_user(client):
+    """ Helper function to login and return the JWT cookie. """
+    register_user(client)  # Ensure the user is registered
+    response = client.post('/login', json={'username': 'john', 'password': os.getenv('TEST_USER_PASSWORD', 'test123')})
+    return response.headers.get('Set-Cookie')  # Extract JWT from Set-Cookie header
+
+
 # Test adding a new song
 def test_add_song(client):
+    jwt_cookie = login_user(client)
+
     # Add a new song with mood 'happy'
     data = {
         'mood': 'happy',
         'title': 'Happy Song',
         'url': 'https://happy-song-url.com'
     }
-    response = client.post('/song', json=data)
+    response = client.post('/song', json=data, headers={'Cookie': jwt_cookie})
     assert response.status_code == 201
     assert response.json['message'] == "Added new song"
 
 # Test retrieving mood info
 def test_get_mood_info(client):
+    jwt_cookie = login_user(client)
+
     # Test retrieving mood info for 'happy'
     data = {'mood': 'happy'}
-    response = client.post('/mood', json=data)
+    response = client.post('/mood', json=data, headers={'Cookie': jwt_cookie})
     assert response.status_code == 200
     assert 'quote' in response.json
     assert 'songs' in response.json
@@ -52,29 +68,35 @@ def test_get_mood_info(client):
 
 # Test adding song with missing data
 def test_add_song_missing_data(client):
+    jwt_cookie = login_user(client)
+
     data = {
         'mood': 'happy',
         'title': 'Incomplete Song'
         # Missing URL
     }
-    response = client.post('/song', json=data)
+    response = client.post('/song', json=data, headers={'Cookie': jwt_cookie})
     assert response.status_code == 400
     assert response.json['message'] == "Missing data"
 
 # Test retrieving mood info for non-existent mood
 def test_get_invalid_mood_info(client):
+    jwt_cookie = login_user(client)
+
     data = {'mood': 'non_existent_mood'}
-    response = client.post('/mood', json=data)
+    response = client.post('/mood', json=data, headers={'Cookie': jwt_cookie})
     assert response.status_code == 404
     assert response.json['message'] == "Mood not found"
 
 # Test adding a song for a non-existent mood
 def test_add_song_invalid_mood(client):
+    jwt_cookie = login_user(client)
+
     data = {
         'mood': 'non_existent_mood',
         'title': 'Song with Invalid Mood',
         'url': 'https://invalid-mood-song.com'
     }
-    response = client.post('/song', json=data)
+    response = client.post('/song', json=data, headers={'Cookie': jwt_cookie})
     assert response.status_code == 404
     assert response.json['message'] == "Mood not found"
