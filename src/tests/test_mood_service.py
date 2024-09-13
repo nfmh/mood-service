@@ -8,30 +8,32 @@ from dotenv import load_dotenv
 
 @pytest.fixture
 def app():
-    """Create and configure a new app instance for each test."""
     # Load environment variables from .env file
     load_dotenv(".env")
     
     # Create the Flask app
     app = create_app()
 
-    # Enable testing mode
+    # Enable testing mode and explicitly disable CSRF protection for the test cases
     app.config['TESTING'] = True
     app.config['WTF_CSRF_ENABLED'] = False 
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///:memory:')  # In-memory DB for testing
     
+    # Create the tables in the test database
     with app.app_context():
         db.create_all()  # Create the database tables
-
+    
     yield app
 
+    # Drop the tables after the tests
     with app.app_context():
         db.drop_all()
 
+
 @pytest.fixture
 def client(app):
-    """A test client for the app."""
     return app.test_client()
+
 
 def mock_jwt_token(app):
     """ Helper function to generate a mock JWT token. """
@@ -40,12 +42,13 @@ def mock_jwt_token(app):
         access_token = create_access_token(identity={'username': 'john'})
         return access_token
 
+
 # Test adding a new song
 def test_add_song(client, app):
     # Generate JWT token
     jwt_token = mock_jwt_token(app)
 
-    # Set the JWT token as a cookie
+    # Set the JWT token as a cookie (correct way)
     client.set_cookie('localhost', 'access_token_cookie', jwt_token)
 
     # Add a new song with mood 'happy'
