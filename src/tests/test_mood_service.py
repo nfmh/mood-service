@@ -20,9 +20,10 @@ def app():
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///:memory:')  # In-memory DB for testing
     app.config['JWT_COOKIE_CSRF_PROTECT'] = False  # Disable CSRF for testing cookies
     
-    # Create the tables in the test database
+    # Create the tables in the test database and seed data
     with app.app_context():
-        db.create_all()  # Create the database tables
+        db.create_all()
+        seed_test_data()  # Seed the test data
     
     yield app
 
@@ -44,20 +45,37 @@ def mock_jwt_token(app):
         return access_token
 
 
+def seed_test_data():
+    """ Function to seed the test database with initial data. """
+    # Add 'happy' mood
+    happy_mood = Mood(mood_name='happy')
+    db.session.add(happy_mood)
+    
+    # Add some quotes for 'happy' mood
+    quote = Quote(mood_id=happy_mood.id, quote='Happiness is the key to success.')
+    db.session.add(quote)
+    
+    # Add some songs for 'happy' mood
+    song = Song(title='Happy Song', url='https://happy-song-url.com', mood_id=happy_mood.id)
+    db.session.add(song)
+    
+    db.session.commit()
+
+
 # Test adding a new song
 def test_add_song(client, app):
     # Generate JWT token
     jwt_token = mock_jwt_token(app)
     print(f"Generated JWT Token: {jwt_token}")  # Debug output for JWT
 
-    # Set the JWT token as a cookie (correct way)
+    # Set the JWT token as a cookie
     client.set_cookie('access_token_cookie', jwt_token)
 
     # Add a new song with mood 'happy'
     data = {
         'mood': 'happy',
-        'title': 'Happy Song',
-        'url': 'https://happy-song-url.com'
+        'title': 'Another Happy Song',
+        'url': 'https://another-happy-song-url.com'
     }
     response = client.post('/song', json=data)
     print(f"Response status: {response.status_code}, Body: {response.json}")  # Debug output
