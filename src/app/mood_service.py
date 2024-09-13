@@ -22,7 +22,8 @@ def get_mood_info():
 
     random_quote = secrets.choice(quotes).quote if quotes else "No quote available for this mood."
 
-    # Retrieve 5 random songs
+    # Retrieve 5 random songs, ensuring secure random sampling using secrets.SystemRandom
+    # Since these songs are public data, their random sampling poses no security risk.
     songs = get_songs(mood_name)
     song_list = [{'title': song.title, 'url': song.url} for song in secrets.SystemRandom().sample(songs, min(5, len(songs)))] if songs else []
 
