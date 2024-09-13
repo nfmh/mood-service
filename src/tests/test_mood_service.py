@@ -47,9 +47,10 @@ def mock_jwt_token(app):
 
 def seed_test_data():
     """ Function to seed the test database with initial data. """
-    # Add 'happy' mood
+    # Add 'happy' mood and commit it so the mood_id is generated
     happy_mood = Mood(mood_name='happy')
     db.session.add(happy_mood)
+    db.session.commit()  # Commit so that the mood_id is generated
     
     # Add some quotes for 'happy' mood
     quote = Quote(mood_id=happy_mood.id, quote='Happiness is the key to success.')
@@ -59,8 +60,7 @@ def seed_test_data():
     song = Song(title='Happy Song', url='https://happy-song-url.com', mood_id=happy_mood.id)
     db.session.add(song)
     
-    db.session.commit()
-
+    db.session.commit()  # Commit all changes to the database
 
 # Test adding a new song
 def test_add_song(client, app):
