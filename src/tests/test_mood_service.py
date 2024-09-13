@@ -49,7 +49,7 @@ def test_add_song(client, app):
     jwt_token = mock_jwt_token(app)
 
     # Set the JWT token as a cookie (correct way)
-    client.set_cookie('localhost', 'access_token_cookie', jwt_token)
+   client.set_cookie('access_token_cookie', jwt_token)
 
     # Add a new song with mood 'happy'
     data = {
@@ -67,7 +67,7 @@ def test_get_mood_info(client, app):
     jwt_token = mock_jwt_token(app)
 
     # Set the JWT token as a cookie
-    client.set_cookie('localhost', 'access_token_cookie', jwt_token)
+   client.set_cookie('access_token_cookie', jwt_token)
 
     # Test retrieving mood info for 'happy'
     data = {'mood': 'happy'}
@@ -83,7 +83,7 @@ def test_add_song_missing_data(client, app):
     jwt_token = mock_jwt_token(app)
 
     # Set the JWT token as a cookie
-    client.set_cookie('localhost', 'access_token_cookie', jwt_token)
+   client.set_cookie('access_token_cookie', jwt_token)
 
     data = {
         'mood': 'happy',
@@ -100,7 +100,7 @@ def test_get_invalid_mood_info(client, app):
     jwt_token = mock_jwt_token(app)
 
     # Set the JWT token as a cookie
-    client.set_cookie('localhost', 'access_token_cookie', jwt_token)
+   client.set_cookie('access_token_cookie', jwt_token)
 
     data = {'mood': 'non_existent_mood'}
     response = client.post('/mood', json=data)
@@ -113,7 +113,7 @@ def test_add_song_invalid_mood(client, app):
     jwt_token = mock_jwt_token(app)
 
     # Set the JWT token as a cookie
-    client.set_cookie('localhost', 'access_token_cookie', jwt_token)
+   client.set_cookie('access_token_cookie', jwt_token)
 
     data = {
         'mood': 'non_existent_mood',
