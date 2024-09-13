@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify, make_response
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, set_access_cookies, unset_jwt_cookies
 from services.service import get_quotes, get_songs, get_movement, add_song
-import random
+import secrets
 
 mood_service_blueprint = Blueprint('mood_service', __name__)
 
@@ -20,11 +20,11 @@ def get_mood_info():
     if not quotes:
         return jsonify(message="Mood not found"), 404
 
-    random_quote = random.choice(quotes).quote if quotes else "No quote available for this mood."
+    random_quote = secrets.choice(quotes).quote if quotes else "No quote available for this mood."
 
     # Retrieve 5 random songs
     songs = get_songs(mood_name)
-    song_list = [{'title': song.title, 'url': song.url} for song in random.sample(songs, min(5, len(songs)))] if songs else []
+    song_list = [{'title': song.title, 'url': song.url} for song in secrets.SystemRandom().sample(songs, min(5, len(songs)))] if songs else []
 
     # Retrieve mood image
     movement = get_movement(mood_name)
