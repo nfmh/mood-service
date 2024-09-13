@@ -18,6 +18,7 @@ def app():
     app.config['TESTING'] = True
     app.config['WTF_CSRF_ENABLED'] = False 
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///:memory:')  # In-memory DB for testing
+    app.config['JWT_COOKIE_CSRF_PROTECT'] = False  # Disable CSRF for testing cookies
     
     # Create the tables in the test database
     with app.app_context():
@@ -47,6 +48,7 @@ def mock_jwt_token(app):
 def test_add_song(client, app):
     # Generate JWT token
     jwt_token = mock_jwt_token(app)
+    print(f"Generated JWT Token: {jwt_token}")  # Debug output for JWT
 
     # Set the JWT token as a cookie (correct way)
     client.set_cookie('access_token_cookie', jwt_token)
@@ -58,6 +60,7 @@ def test_add_song(client, app):
         'url': 'https://happy-song-url.com'
     }
     response = client.post('/song', json=data)
+    print(f"Response status: {response.status_code}, Body: {response.json}")  # Debug output
     assert response.status_code == 201
     assert response.json['message'] == "Added new song"
 
@@ -65,6 +68,7 @@ def test_add_song(client, app):
 def test_get_mood_info(client, app):
     # Generate JWT token
     jwt_token = mock_jwt_token(app)
+    print(f"Generated JWT Token: {jwt_token}")  # Debug output for JWT
 
     # Set the JWT token as a cookie
     client.set_cookie('access_token_cookie', jwt_token)
@@ -72,6 +76,7 @@ def test_get_mood_info(client, app):
     # Test retrieving mood info for 'happy'
     data = {'mood': 'happy'}
     response = client.post('/mood', json=data)
+    print(f"Response status: {response.status_code}, Body: {response.json}")  # Debug output
     assert response.status_code == 200
     assert 'quote' in response.json
     assert 'songs' in response.json
@@ -91,6 +96,7 @@ def test_add_song_missing_data(client, app):
         # Missing URL
     }
     response = client.post('/song', json=data)
+    print(f"Response status: {response.status_code}, Body: {response.json}")  # Debug output
     assert response.status_code == 400
     assert response.json['message'] == "Missing data"
 
@@ -104,6 +110,7 @@ def test_get_invalid_mood_info(client, app):
 
     data = {'mood': 'non_existent_mood'}
     response = client.post('/mood', json=data)
+    print(f"Response status: {response.status_code}, Body: {response.json}")  # Debug output
     assert response.status_code == 404
     assert response.json['message'] == "Mood not found"
 
@@ -121,5 +128,6 @@ def test_add_song_invalid_mood(client, app):
         'url': 'https://invalid-mood-song.com'
     }
     response = client.post('/song', json=data)
+    print(f"Response status: {response.status_code}, Body: {response.json}")  # Debug output
     assert response.status_code == 404
     assert response.json['message'] == "Mood not found"
