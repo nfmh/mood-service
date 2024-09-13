@@ -1,4 +1,6 @@
-# Define a constant at the top of your file
+from app import db
+
+# Define a constant
 MOODS_ID = "moods.id"
 
 class Quote(db.Model):
