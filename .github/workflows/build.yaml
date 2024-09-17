@@ -9,6 +9,9 @@ on:
 jobs:
   build_pipeline:
     runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
 
     steps:
     - uses: actions/checkout@v4
@@ -92,7 +95,7 @@ jobs:
     - name: Run Trivy vulnerability scan
       uses: aquasecurity/trivy-action@master
       with:
-        image-ref: mood-service:1.0
+        image-ref: "${{ steps.build-image.outputs.IMAGE_NAME }}"
         format: 'table'
         severity: 'HIGH,CRITICAL'
         exit-code: '1'  # Trivy will fail the build with code 1 if vulnerabilities are found
