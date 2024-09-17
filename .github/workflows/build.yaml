@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
@@ -23,7 +23,7 @@ jobs:
     # Install Dependencies (including python-dotenv)
     - name: Install Dependencies (Flask, SQLAlchemy, JWT, CORS, pytest, pytest-cov, Flask-WTF, python-dotenv)
       run: |
-        pip install Flask flask_sqlalchemy flask_jwt_extended flask_cors flask_wtf bandit pytest pytest-cov python-dotenv
+        pip install Flask flask_sqlalchemy flask_jwt_extended flask_cors flask_wtf bandit pytest pytest-cov python-dotenv psycopg2
 
      # Set PYTHONPATH to ensure the app module can be found
     - name: Set PYTHONPATH
@@ -58,9 +58,35 @@ jobs:
           -Dsonar.python.coverage.reportPaths=coverage-reports/coverage.xml
           -Dsonar.python.version=3.12
     
-    # Docker build step
+    #Login to GCP and authenticate with docker in order to push images
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - id: auth
+      name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v2
+      with:
+        workload_identity_provider: "projects/576501498801/locations/global/workloadIdentityPools/github-wi-pool/providers/github-provider"
+        service_account: "artifact-registry@corded-epigram-435910-d5.iam.gserviceaccount.com"
+        token_format: 'access_token'
+    
+    - uses: docker/login-action@v3
+      with:
+        registry: 'europe-west3-docker.pkg.dev'
+        username: 'oauth2accesstoken'
+        password: '${{ steps.auth.outputs.access_token }}'
+        
+
+    - name: Set DateTime as IMAGE_TAG
+      id: datetime
+      run: echo "DATETIME=$(date '+%Y%m%d%H%M%S')" >> $GITHUB_OUTPUT
+
     - name: Build Docker image
-      run: docker build -t mood-service:1.0 .
+      id: build-image
+      run: |
+        IMAGE_TAG=prod.${{ steps.datetime.outputs.DATETIME }}
+        docker build -t "${{ secrets.REGISTRY_NAME }}:${IMAGE_TAG}" -f Dockerfile .
+        echo "IMAGE_NAME=${{ secrets.REGISTRY_NAME }}:${IMAGE_TAG}" >> $GITHUB_OUTPUT
 
     # Trivy scan step
     - name: Run Trivy vulnerability scan
@@ -70,3 +96,8 @@ jobs:
         format: 'table'
         severity: 'HIGH,CRITICAL'
         exit-code: '1'  # Trivy will fail the build with code 1 if vulnerabilities are found
+    
+    # Publish the Docker Image to GCP
+    - name: Push Docker image to Artifact registry
+      run: |
+        docker push "${{ steps.build-image.outputs.IMAGE_NAME }}"
