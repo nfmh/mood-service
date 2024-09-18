@@ -39,5 +39,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Expose the app port
 EXPOSE 3002
 
-# Command to run the Flask app
-CMD ["python", "-m", "flask", "run", "--host=0.0.0.0", "--port=3002"]
+# Install Gunicorn
+RUN pip install gunicorn
+
+# Use Gunicorn as the WSGI server
+CMD ["gunicorn", "--bind", "0.0.0.0:3002", "app:create_app"]
+
