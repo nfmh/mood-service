@@ -4,6 +4,8 @@ FROM python:3.12-alpine
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
+ENV FLASK_APP=app:create_app
+ENV PYTHONPATH=/mood-service/src
 
 # Working directory
 WORKDIR /mood-service
@@ -30,11 +32,12 @@ COPY . /mood-service
 # Upgrade pip and setuptools to latest secure versions
 RUN pip install --upgrade pip setuptools==70.0.0
 
-# Install the latest secure dependencies
-RUN pip install --no-cache-dir Flask==2.3.3 SQLAlchemy==2.0.21
+# Install the dependencies from requirements.txt
+COPY requirements.txt /mood-service/requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Expose the app port
 EXPOSE 3002
 
 # Command to run the Flask app
-CMD ["flask", "run", "--host=0.0.0.0", "--port=3002"]
+CMD ["python", "-m", "flask", "run", "--host=0.0.0.0", "--port=3002"]
