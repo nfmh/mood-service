@@ -17,6 +17,11 @@ RUN apk update && apk add --no-cache \
     libffi-dev \
     postgresql-dev \
     build-base
+
+# Install Gunicorn before switching users
+RUN pip install --upgrade pip setuptools==70.0.0
+RUN pip install gunicorn
+
 # Create a non-root user and group with a fixed UID and GID
 RUN addgroup -g 1001 -S appgroup && adduser -u 1001 -S appuser -G appgroup
 
