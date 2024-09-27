@@ -165,10 +165,10 @@ FROM moods
 JOIN (
     -- movement data for each mood
     VALUES
-        ('energized', 'http://individual.utoronto.ca/ekhc/old/ericwashereIII/images/2a.png'),
-        ('sleepy', 'http://individual.utoronto.ca/ekhc/old/ericwashereIII/images/10a.png'),
-        ('moody', 'http://individual.utoronto.ca/ekhc/old/ericwashereIII/images/8a.png'),
-        ('happy', 'http://individual.utoronto.ca/ekhc/old/ericwashereIII/images/3.png'),
-        ('sad', 'http://individual.utoronto.ca/ekhc/old/ericwashereIII/images/15.png')
+        ('energized', 'https://www.egreenway.com/taichichuan/images/ST12a.gif'),
+        ('sleepy', 'https://www.egreenway.com/taichichuan/images/ST10b.gif'),
+        ('moody', 'https://www.egreenway.com/taichichuan/images/ST21a.gif'),
+        ('happy', 'https://www.egreenway.com/taichichuan/images/ST17a.gif'),
+        ('sad', 'https://www.egreenway.com/taichichuan/images/ST9a.gif')
 ) AS movement_data (mood_name, image_url)
 ON moods.mood_name = movement_data.mood_name;
