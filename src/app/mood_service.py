@@ -10,6 +10,11 @@ mood_service_blueprint = Blueprint('mood_service', __name__)
 @jwt_required()
 def get_mood_info():
     data = request.get_json()
+
+     # Add this to see if the tokens are being received correctly
+    print(f"Received CSRF token from header: {request.headers.get('X-CSRFToken')}")
+    print(f"Received JWT access token from cookie: {request.cookies.get('access_token_cookie')}")
+
     mood_name = data.get('mood')
 
     if not mood_name:
