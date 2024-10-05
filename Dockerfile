@@ -34,9 +34,6 @@ USER appuser
 # Copy the current directory contents into the container
 COPY . /mood-service
 
-# Upgrade pip and setuptools to latest secure versions
-RUN pip install --upgrade pip setuptools==70.0.0
-
 # Install the dependencies from requirements.txt
 COPY requirements.txt /mood-service/requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
@@ -44,9 +41,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Expose the app port
 EXPOSE 3002
 
-# Install Gunicorn
-RUN pip install gunicorn
-
 # Use Gunicorn as the WSGI server
-CMD ["gunicorn", "--bind", "0.0.0.0:3002", "app:create_app"]
-
+CMD ["gunicorn", "--bind", "0.0.0.0:3002", "--log-level", "debug", "wsgi:app"]

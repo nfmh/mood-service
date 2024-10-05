@@ -28,16 +28,23 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+   # ** CSRF Protection Key **
+    app.config['SECRET_KEY'] = os.getenv('CSRF_SECRET_KEY')
+
     app.config['TESTING'] = os.getenv('FLASK_ENV') == 'testing'
     if not app.config['TESTING']:
         csrf.init_app(app)
 
-    # Disable CSRF for internal service-to-service communication
-    @app.before_request
-    def disable_csrf_for_internal_requests():
-        # You can customize this check based on internal IP addresses or headers
-        if request.headers.get('X-Internal-Request', False):  
-            csrf.protect = False  # Disable CSRF for this request
+    # Print the SQLALCHEMY_DATABASE_URI to ensure it's using the right one
+    print(f"Using Database URI: {app.config['SQLALCHEMY_DATABASE_URI']}")
+
+    # Add route to return CSRF token
+    @app.route('/csrf-token', methods=['GET'])
+    def get_csrf_token():
+        token = generate_csrf()
+        response = make_response({'csrf_token': token})
+        response.set_cookie('csrf_token', token)
+        return response
 
     # Initialize extensions with the app
     db.init_app(app)
