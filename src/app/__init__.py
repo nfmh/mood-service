@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, make_response  # Add make_response import here
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
 from flask_wtf.csrf import CSRFProtect, generate_csrf
@@ -28,7 +28,7 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-   # ** CSRF Protection Key **
+    # ** CSRF Protection Key **
     app.config['SECRET_KEY'] = os.getenv('CSRF_SECRET_KEY')
 
     app.config['TESTING'] = os.getenv('FLASK_ENV') == 'testing'
