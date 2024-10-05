@@ -43,8 +43,11 @@ def create_app():
     def get_csrf_token():
         token = generate_csrf()
         response = make_response({'csrf_token': token})
-        response.set_cookie('csrf_token', token)
+        
+        # Set CSRF token in the cookie with httponly=False to make it accessible
+        response.set_cookie('csrf_token', token, httponly=False)  
         return response
+
 
     # Initialize extensions with the app
     db.init_app(app)
