@@ -21,22 +21,23 @@ def create_app():
     # Application configurations
     app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')  
     app.config['JWT_TOKEN_LOCATION'] = ['cookies']
-    app.config['JWT_COOKIE_CSRF_PROTECT'] = True
-    app.config['JWT_ACCESS_COOKIE_PATH'] = '/'
-    app.config['JWT_COOKIE_SECURE'] = True
+    
+    # Disable secure cookies for local development
+    app.config['JWT_COOKIE_SECURE'] = False
+    
+    # Use 'Lax' or 'None' for SameSite in local development
     app.config['JWT_COOKIE_SAMESITE'] = 'Lax'
+    app.config['JWT_ACCESS_COOKIE_PATH'] = '/'
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     # ** CSRF Protection Key **
     app.config['SECRET_KEY'] = os.getenv('CSRF_SECRET_KEY')
 
+    # CSRF Protection only enabled outside testing environment
     app.config['TESTING'] = os.getenv('FLASK_ENV') == 'testing'
     if not app.config['TESTING']:
         csrf.init_app(app)
-
-    # Print the SQLALCHEMY_DATABASE_URI to ensure it's using the right one
-    print(f"Using Database URI: {app.config['SQLALCHEMY_DATABASE_URI']}")
 
     # Add route to return CSRF token
     @app.route('/csrf-token', methods=['GET'])
@@ -44,12 +45,11 @@ def create_app():
         token = generate_csrf()
         response = make_response({'csrf_token': token})
         
-        # Set CSRF token in the cookie with httponly=False to make it accessible
+        # Set CSRF token in the cookie with httponly=False for local development
         response.set_cookie('csrf_token', token, httponly=False)  
         return response
 
-
-    # Initialize extensions with the app
+    # Initialize extensions
     db.init_app(app)
     jwt.init_app(app)
     
@@ -57,8 +57,7 @@ def create_app():
     if os.getenv('FLASK_ENV') == 'production':
         CORS(app, resources={r"/*": {"origins": "https://app.nfmh.solutions"}})
     else:
-        allowed_origins = os.getenv('ALLOWED_ORIGINS', '*')
-        CORS(app, resources={r"/*": {"origins": allowed_origins}})
+        CORS(app, resources={r"/*": {"origins": '*'}})
 
     # Register blueprints
     from app.mood_service import mood_service_blueprint
