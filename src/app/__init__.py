@@ -55,7 +55,7 @@ def create_app():
     
     # CORS setup
     if os.getenv('FLASK_ENV') == 'production':
-        CORS(app, resources={r"/*": {"origins": "https://app.nfmh.solutions"}})
+        CORS(app, resources={r"/*": {"origins": '*'}})
     else:
         CORS(app, resources={r"/*": {"origins": '*'}})
 
