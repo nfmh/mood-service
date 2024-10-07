@@ -16,7 +16,10 @@ RUN apk update && apk add --no-cache \
     musl-dev \
     libffi-dev \
     postgresql-dev \
-    build-base
+    build-base \
+    tcpdump \
+    iputils \
+    busybox-extras
 
 # Install Gunicorn before switching users
 RUN pip install --upgrade pip setuptools==70.0.0
@@ -27,6 +30,9 @@ RUN addgroup -g 1001 -S appgroup && adduser -u 1001 -S appuser -G appgroup
 
 # Set permissions on the working directory
 RUN chown -R appuser:appgroup /mood-service
+
+# Grant necessary capabilities for network tools like tcpdump
+RUN setcap cap_net_raw,cap_net_admin=eip /usr/sbin/tcpdump
 
 # Switch to the non-root user
 USER appuser
