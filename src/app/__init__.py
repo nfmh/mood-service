@@ -42,7 +42,6 @@ def create_app():
         token = generate_csrf()
         response = make_response({'csrf_token': token})
         
-        # Set CSRF token in the cookie with httponly=False for local development
         response.set_cookie('csrf_token', token, httponly=False)  
         return response
 
@@ -52,7 +51,8 @@ def create_app():
     
     # CORS setup
     if os.getenv('FLASK_ENV') == 'production':
-        CORS(app, resources={r"/*": {"origins": '*'}})
+        allowed_origins = os.getenv('ALLOWED_ORIGINS')
+        CORS(app, resources={r"/*": {"origins": allowed_origins}})
     else:
         CORS(app, resources={r"/*": {"origins": '*'}})
 
