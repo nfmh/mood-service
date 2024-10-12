@@ -24,7 +24,7 @@ def create_app():
     app.config['JWT_COOKIE_CSRF_PROTECT'] = True
     app.config['JWT_ACCESS_COOKIE_PATH'] = '/'
     app.config['JWT_COOKIE_SECURE'] = os.getenv('FLASK_ENV') == 'production'
-    app.config['JWT_COOKIE_SAMESITE'] = 'Lax'
+    app.config['JWT_COOKIE_SAMESITE'] = 'None'  # Allows cross-origin usage while keeping security
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -41,8 +41,7 @@ def create_app():
     def get_csrf_token():
         token = generate_csrf()
         response = make_response({'csrf_token': token})
-        
-        response.set_cookie('csrf_token', token)  
+        response.set_cookie('csrf_token', token, httponly=False, secure=True, samesite='None')  # Set cookie attributes to secure and SameSite=None
         return response
 
     # Initialize extensions
@@ -52,7 +51,8 @@ def create_app():
     # CORS setup
     if os.getenv('FLASK_ENV') == 'production':
         allowed_origins = os.getenv('ALLOWED_ORIGINS')
-        CORS(app, resources={r"/*": {"origins": allowed_origins}})
+        # CORS setup
+        CORS(app, supports_credentials=True, resources={r"/*": {"origins": os.getenv('ALLOWED_ORIGINS')}})
     else:
         CORS(app, resources={r"/*": {"origins": '*'}})
 
