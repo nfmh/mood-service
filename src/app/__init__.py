@@ -4,12 +4,23 @@ from flask_jwt_extended import JWTManager
 from flask_wtf.csrf import CSRFProtect, generate_csrf
 from flask_cors import CORS
 import os
-from flask import request
+from flask import request,g
+import sys
+from datetime import timedelta
+import time
+import logging
 
 # Initialize extensions
 db = SQLAlchemy()
 jwt = JWTManager()
 csrf = CSRFProtect()
+
+
+# Configure logging
+# Configure logging to stdout
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s', stream=sys.stdout)
+logger = logging.getLogger(__name__)
+
 
 def create_app():
     app = Flask(__name__)
@@ -36,6 +47,19 @@ def create_app():
     app.config['TESTING'] = os.getenv('FLASK_ENV') == 'testing'
     if not app.config['TESTING']:
         csrf.init_app(app)
+    
+        # **Request Logging Middleware**
+    @app.before_request
+    def log_request_info():
+        g.start_time = time.time()
+        logger.info(f"Incoming {request.method} request to {request.path}")
+
+    @app.after_request
+    def log_response_info(response):
+        processing_time = time.time() - g.start_time
+        logger.info(f"Completed {request.method} request to {request.path} in {processing_time:.4f} seconds")
+        return response
+
 
     # Add route to return CSRF token
     @app.route('/csrf-token', methods=['GET'])
